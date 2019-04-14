@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Cirno.Blogs.Model.DTO.Entities.Blog;
 using Cirno.Blogs.Model.Enitities;
+using Cirno.Blogs.Security;
 using Cirno.Blogs.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,11 +30,6 @@ namespace Cirno.Blogs.Controllers
         [HttpGet]
         public async Task<IActionResult> GetBlogsAsync(int page = Helpers.DEFAULT_PAGE, int limit = Helpers.MAX_LIMIT_ON_PAGE)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-            }
-
             Helpers.CorrectPageLimitValues(ref page, ref limit);
             var entities = await _blogs.GetBlogsAsync(page, limit);
 
@@ -59,6 +55,11 @@ namespace Cirno.Blogs.Controllers
         public async Task<IActionResult> CreateBlogAsync([FromBody]CreateBlogDto requestDto)
         {
             var entity = _mapper.Map<Blog>(requestDto);
+
+            entity.Sanitize();
+            if (!TryValidateModel(entity))
+                return BadRequest();
+
             entity = await _blogs.CreateBlogAsync(entity);
 
             var result = _mapper.Map<BlogDto>(entity);
@@ -69,17 +70,17 @@ namespace Cirno.Blogs.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateBlogAsync(long id, [FromBody]UpdateBlogDto requestDto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-            }
-
             var entity = await _blogs.GetBlogAsync(id);
 
             if (entity == default(Blog))
                 return NotFound();
 
             entity = _mapper.Map(requestDto, entity);
+
+            entity.Sanitize();
+            if (!TryValidateModel(entity))
+                return BadRequest();
+
             entity = await _blogs.UpdateBlogAsync(entity);
 
             var result = _mapper.Map<BlogDto>(entity);

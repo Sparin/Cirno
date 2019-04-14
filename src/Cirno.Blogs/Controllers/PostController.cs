@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Cirno.Blogs.Model.DTO.Entities.Post;
 using Cirno.Blogs.Model.Enitities;
+using Cirno.Blogs.Security;
 using Cirno.Blogs.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -30,11 +31,6 @@ namespace Cirno.Blogs.Controllers
         [HttpGet]
         public async Task<IActionResult> GetPostsAsync(long? blogId = null, int page = Helpers.DEFAULT_PAGE, int limit = Helpers.MAX_LIMIT_ON_PAGE)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-            }
-
             Helpers.CorrectPageLimitValues(ref page, ref limit);
             var entities = await _posts.GetPostsAsync(page, limit, blogId);
 
@@ -59,14 +55,18 @@ namespace Cirno.Blogs.Controllers
         [HttpPost]
         public async Task<IActionResult> CreatePostAsync([FromBody]CreatePostDto requestDto)
         {            
-            var post = _mapper.Map<Post>(requestDto);
-            var blog = await _blogs.GetBlogAsync(post.BlogId);
+            var entity = _mapper.Map<Post>(requestDto);
+            var blog = await _blogs.GetBlogAsync(entity.BlogId);
             if (blog == null)
                 return BadRequest();
 
-            post = await _posts.CreatePostAsync(post);
+            entity.Sanitize();
+            if (!TryValidateModel(entity))
+                return BadRequest();
 
-            var result = _mapper.Map<PostDto>(post);
+            entity = await _posts.CreatePostAsync(entity);
+
+            var result = _mapper.Map<PostDto>(entity);
             return Ok(result);
         }
 
@@ -74,17 +74,16 @@ namespace Cirno.Blogs.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdatePostAsync(long id, [FromBody]UpdatePostDto requestDto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-            }
-
             var entity = await _posts.GetPostAsync(id);
 
             if (entity == default(Post))
                 return NotFound();
 
             entity = _mapper.Map(requestDto, entity);
+            entity.Sanitize();
+            if (!TryValidateModel(entity))
+                return BadRequest();
+
             entity = await _posts.UpdatePostAsync(entity);
 
             var result = _mapper.Map<PostDto>(entity);

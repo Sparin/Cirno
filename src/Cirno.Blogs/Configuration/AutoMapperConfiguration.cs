@@ -21,6 +21,5 @@ namespace Cirno.Blogs.Configuration
             CreateMap<CreatePostDto, Post>();
             CreateMap<UpdatePostDto, Post>();
         }
-
     }
 }
