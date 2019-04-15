@@ -20,6 +20,10 @@ using System.Threading.Tasks;
 using Cirno.Identity.Configuration;
 using Cirno.Identity.Security;
 using Cirno.Identity.ViewModels.Account;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using System.Text.Encodings.Web;
+using AutoMapper;
 
 namespace Cirno.Identity.Controllers
 {
@@ -33,6 +37,9 @@ namespace Cirno.Identity.Controllers
         private readonly IClientStore _clientStore;
         private readonly IAuthenticationSchemeProvider _schemeProvider;
         private readonly IEventService _events;
+        //private readonly IEmailSender _emailSender;
+        private readonly IMapper _mapper;
+        private readonly ILogger<AccountController> _logger;
 
         public AccountController(
             UserManager<ApplicationUser> userManager,
@@ -40,7 +47,10 @@ namespace Cirno.Identity.Controllers
             IIdentityServerInteractionService interaction,
             IClientStore clientStore,
             IAuthenticationSchemeProvider schemeProvider,
-            IEventService events)
+            IEventService events,
+            //IEmailSender emailSender,
+            IMapper mapper,
+            ILogger<AccountController> logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -48,6 +58,9 @@ namespace Cirno.Identity.Controllers
             _clientStore = clientStore;
             _schemeProvider = schemeProvider;
             _events = events;
+            //_emailSender = emailSender;
+            _mapper = mapper;
+            _logger = logger;
         }
 
         /// <summary>
@@ -151,6 +164,53 @@ namespace Cirno.Identity.Controllers
             return View(vm);
         }
 
+        /// <summary>
+        /// Show register page
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public async Task<IActionResult> Register(string returnUrl)
+        {
+            var vm = new RegisterViewModel() { ReturnUrl = returnUrl };
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Register(RegisterInputModel input)
+        {
+            input.ReturnUrl = input.ReturnUrl ?? Url.Content("~/");
+            if (ModelState.IsValid)
+            {
+                var user = new ApplicationUser { UserName = input.Username, Email = input.Email };
+                var result = await _userManager.CreateAsync(user, input.Password);
+                if (result.Succeeded)
+                {
+                    _logger.LogInformation("User created a new account with password.");
+
+                    //var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    //var callbackUrl = Url.Page(
+                    //    "/Account/ConfirmEmail",
+                    //    pageHandler: null,
+                    //    values: new { userId = user.Id, code = code },
+                    //    protocol: Request.Scheme);
+
+                    //await _emailSender.SendEmailAsync(input.Email, "Confirm your email",
+                    //    $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+
+                    await _signInManager.SignInAsync(user, isPersistent: false);
+                    return LocalRedirect(input.ReturnUrl);
+                }
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
+            }
+
+            // If we got this far, something failed, redisplay form
+            var vm = _mapper.Map<RegisterViewModel>(input);
+            return View(vm );
+        }
         
         /// <summary>
         /// Show logout page
