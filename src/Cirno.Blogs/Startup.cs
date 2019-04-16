@@ -37,12 +37,13 @@ namespace Cirno.Blogs
         public void ConfigureServices(IServiceCollection services)
         {
             string blogDbConnectionString = Configuration.GetConnectionString("BlogsDb");
+            var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
 
             services.AddDbContextPool<BloggingContext>(options =>
             {
                 options.UseNpgsql(blogDbConnectionString, b =>
                 {
-                    b.MigrationsAssembly("Cirno.Blogs");
+                    b.MigrationsAssembly(migrationsAssembly);
                 });
                 if (_env.IsDevelopment())
                     options.EnableSensitiveDataLogging();
@@ -78,6 +79,7 @@ namespace Cirno.Blogs
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseDatabaseErrorPage();
                 app.UseSwagger();
                 app.UseSwaggerUI(c =>
                 {

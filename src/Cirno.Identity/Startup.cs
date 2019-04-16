@@ -11,7 +11,12 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using System;
+using System.IO;
+using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Cirno.Identity
 {
@@ -28,8 +33,17 @@ namespace Cirno.Identity
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
+            var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
+
+            services.AddDbContextPool<ApplicationDbContext>(options =>
+            {
+                options.UseNpgsql(Configuration.GetConnectionString("IdentitiesDb"), npgsqlOptions =>
+                {
+                    npgsqlOptions.MigrationsAssembly(migrationsAssembly);
+                });
+                if (Environment.IsDevelopment())
+                    options.EnableSensitiveDataLogging();
+            }, 32);
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -39,42 +53,47 @@ namespace Cirno.Identity
 
             services.AddMvc().SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_2_1);
 
-            services.Configure<IISOptions>(iis =>
-            {
-                iis.AuthenticationDisplayName = "Windows";
-                iis.AutomaticAuthentication = false;
-            });
-
-            var builder = services.AddIdentityServer(options =>
-            {
-                options.Events.RaiseErrorEvents = true;
-                options.Events.RaiseInformationEvents = true;
-                options.Events.RaiseFailureEvents = true;
-                options.Events.RaiseSuccessEvents = true;
-            })
-                .AddInMemoryIdentityResources(Config.GetIdentityResources())
-                .AddInMemoryApiResources(Config.GetApis())
-                .AddInMemoryClients(Config.GetClients())
+            var idsrvBuilder = services
+                .AddIdentityServer(options =>
+                {
+                    options.Events.RaiseErrorEvents = true;
+                    options.Events.RaiseInformationEvents = true;
+                    options.Events.RaiseFailureEvents = true;
+                    options.Events.RaiseSuccessEvents = true;
+                })
+                // this adds the config data from DB (clients, resources)
+                .AddConfigurationStore(options =>
+                {
+                    var connectionString = Configuration.GetConnectionString("ConfigurationDb");
+                    options.ConfigureDbContext = builder => builder.UseNpgsql(connectionString, npgsqlOptions =>
+                    {
+                        npgsqlOptions.MigrationsAssembly(migrationsAssembly);
+                    });
+                })
+                // this adds the operational data from DB (codes, tokens, consents)
+                .AddOperationalStore(options =>
+                {
+                    var connectionString = Configuration.GetConnectionString("OperationalDb");
+                    options.ConfigureDbContext = builder => builder.UseNpgsql(connectionString, npgsqlOptions =>
+                    {
+                        npgsqlOptions.MigrationsAssembly(migrationsAssembly);
+                    });
+                })
                 .AddAspNetIdentity<ApplicationUser>();
 
             if (Environment.IsDevelopment())
             {
-                builder.AddDeveloperSigningCredential();
+                idsrvBuilder.AddDeveloperSigningCredential();
             }
             else
             {
-                throw new Exception("need to configure key material");
+                var certificateLocation = Configuration["IS4:Signing:Certificate"];
+                var certificatePassword = Configuration["IS4:Signing:Password"];
+                X509Certificate2 certificate = new X509Certificate2(certificateLocation, certificatePassword);
+                idsrvBuilder.AddSigningCredential(certificate);
             }
 
-            services.AddAuthentication()
-                .AddGoogle(options =>
-                {
-                    // register your IdentityServer with Google at https://console.developers.google.com
-                    // enable the Google+ API
-                    // set the redirect URI to http://localhost:5000/signin-google
-                    options.ClientId = "copy client ID from Google here";
-                    options.ClientSecret = "copy client secret from Google here";
-                });
+            services.AddAuthentication();
         }
 
         public void Configure(IApplicationBuilder app)
