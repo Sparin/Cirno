@@ -1,13 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using Cirno.Blogs.Model.DTO.Entities.Blog;
 using Cirno.Blogs.Model.Enitities;
 using Cirno.Blogs.Security;
 using Cirno.Blogs.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -52,9 +54,16 @@ namespace Cirno.Blogs.Controllers
 
         // POST api/<controller>
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> CreateBlogAsync([FromBody]CreateBlogDto requestDto)
         {
             var entity = _mapper.Map<Blog>(requestDto);
+
+            Guid authorId;
+            if (!Guid.TryParse(User.FindFirstValue("sub"), out authorId))
+                throw new ArgumentException("Sub claim parsing failed");
+
+            entity.AuthourId = authorId;
 
             entity.Sanitize();
             if (!TryValidateModel(entity))
@@ -68,6 +77,7 @@ namespace Cirno.Blogs.Controllers
 
         // PUT api/<controller>/5
         [HttpPut("{id}")]
+        [Authorize]
         public async Task<IActionResult> UpdateBlogAsync(long id, [FromBody]UpdateBlogDto requestDto)
         {
             var entity = await _blogs.GetBlogAsync(id);
@@ -76,6 +86,13 @@ namespace Cirno.Blogs.Controllers
                 return NotFound();
 
             entity = _mapper.Map(requestDto, entity);
+
+            Guid authorId;
+            if (!Guid.TryParse(this.User.FindFirstValue("sub"), out authorId))
+                throw new ArgumentException("Sub claim parsing failed");
+
+            if (authorId != entity.AuthourId)
+                return Forbid();
 
             entity.Sanitize();
             if (!TryValidateModel(entity))
@@ -89,12 +106,20 @@ namespace Cirno.Blogs.Controllers
 
         // DELETE api/<controller>/5
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<IActionResult> DeleteBlogAsync(int id)
         {
             var entity = await _blogs.GetBlogAsync(id);
 
             if (entity == default(Blog))
                 return NotFound();
+
+            Guid authorId;
+            if (!Guid.TryParse(this.User.FindFirstValue("sub"), out authorId))
+                throw new ArgumentException("Sub claim parsing failed");
+
+            if (authorId != entity.AuthourId)
+                return Forbid();
 
             await _blogs.RemoveBlogAsync(entity);
 

@@ -4,7 +4,9 @@
 
 using AutoMapper;
 using Cirno.Identity.Data;
+using Cirno.Identity.Diagnostics;
 using Cirno.Identity.Models;
+using IdentityServer4;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -84,6 +86,10 @@ namespace Cirno.Identity
             if (Environment.IsDevelopment())
             {
                 idsrvBuilder.AddDeveloperSigningCredential();
+
+                idsrvBuilder.AddInMemoryIdentityResources(Config.GetIdentityResources());
+                idsrvBuilder.AddInMemoryApiResources(Config.GetApis());
+                idsrvBuilder.AddInMemoryClients(Config.GetClients());
             }
             else
             {
@@ -92,7 +98,7 @@ namespace Cirno.Identity
                 X509Certificate2 certificate = new X509Certificate2(certificateLocation, certificatePassword);
                 idsrvBuilder.AddSigningCredential(certificate);
             }
-
+            services.AddCors();
             services.AddAuthentication();
         }
 
@@ -108,8 +114,17 @@ namespace Cirno.Identity
                 app.UseExceptionHandler("/Home/Error");
             }
 
+            app.UseCors(builder =>
+            {
+                builder.AllowAnyOrigin();
+                builder.AllowAnyHeader();
+                builder.AllowAnyMethod();
+                builder.AllowCredentials();
+            });
+
             app.UseStaticFiles();
             app.UseIdentityServer();
+            app.UseHttpsRedirection();
             app.UseMvcWithDefaultRoute();
         }
     }
