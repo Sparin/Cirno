@@ -67,19 +67,29 @@ namespace Cirno.Identity
                 .AddConfigurationStore(options =>
                 {
                     var connectionString = Configuration.GetConnectionString("ConfigurationDb");
-                    options.ConfigureDbContext = builder => builder.UseNpgsql(connectionString, npgsqlOptions =>
+                    options.ConfigureDbContext = builder =>
                     {
-                        npgsqlOptions.MigrationsAssembly(migrationsAssembly);
-                    });
+                        builder.UseNpgsql(connectionString, npgsqlOptions =>
+                        {
+                            npgsqlOptions.MigrationsAssembly(migrationsAssembly);
+                        });
+                        if (Environment.IsDevelopment())
+                            builder.EnableSensitiveDataLogging();
+                    };
                 })
                 // this adds the operational data from DB (codes, tokens, consents)
                 .AddOperationalStore(options =>
                 {
                     var connectionString = Configuration.GetConnectionString("OperationalDb");
-                    options.ConfigureDbContext = builder => builder.UseNpgsql(connectionString, npgsqlOptions =>
+                    options.ConfigureDbContext = builder =>
                     {
-                        npgsqlOptions.MigrationsAssembly(migrationsAssembly);
-                    });
+                        builder.UseNpgsql(connectionString, npgsqlOptions =>
+                        {
+                            npgsqlOptions.MigrationsAssembly(migrationsAssembly);
+                        });
+                        if (Environment.IsDevelopment())
+                            builder.EnableSensitiveDataLogging();
+                    };
                 })
                 .AddAspNetIdentity<ApplicationUser>();
 
