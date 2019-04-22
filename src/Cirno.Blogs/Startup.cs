@@ -60,6 +60,7 @@ namespace Cirno.Blogs
                 .AddJsonOptions(options =>
                 {
                     options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
+                    options.SerializerSettings.TypeNameHandling = Newtonsoft.Json.TypeNameHandling.None;
                 });
 
             services.AddAuthorization();
