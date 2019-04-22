@@ -69,9 +69,8 @@ namespace Cirno.Blogs.Controllers
         public async Task<IActionResult> CreateBlogAsync([FromBody]CreateBlogDto requestDto)
         {
             var entity = _mapper.Map<Blog>(requestDto);
-
-            Guid authorId;
-            if (!Guid.TryParse(User.FindFirstValue("sub"), out authorId))
+            
+            if (!Guid.TryParse(User.FindFirstValue("sub"), out Guid authorId))
                 throw new ArgumentException("Sub claim parsing failed");
             entity.AuthourId = authorId;
 
@@ -95,8 +94,7 @@ namespace Cirno.Blogs.Controllers
         [Authorize]
         public async Task<IActionResult> UpdateBlogAsync(long id, [FromBody]UpdateBlogDto requestDto)
         {
-            Guid authorId;
-            if (!Guid.TryParse(User.FindFirstValue("sub"), out authorId))
+            if (!Guid.TryParse(User.FindFirstValue("sub"), out Guid authorId))
                 throw new ArgumentException("Sub claim parsing failed");
 
             _logger.LogInformation($"User (ID #{authorId}) trying to update blog with identificator {id}");
@@ -135,8 +133,7 @@ namespace Cirno.Blogs.Controllers
         [Authorize]
         public async Task<IActionResult> DeleteBlogAsync(int id)
         {
-            Guid authorId;
-            if (!Guid.TryParse(User.FindFirstValue("sub"), out authorId))
+            if (!Guid.TryParse(User.FindFirstValue("sub"), out Guid authorId))
                 throw new ArgumentException("Sub claim parsing failed");
 
             _logger.LogInformation($"User (ID #{authorId}) trying to delete blog with identificator {id}");

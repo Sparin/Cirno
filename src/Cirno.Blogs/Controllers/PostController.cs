@@ -69,8 +69,7 @@ namespace Cirno.Blogs.Controllers
         [Authorize]
         public async Task<IActionResult> CreatePostAsync([FromBody]CreatePostDto requestDto)
         {
-            Guid authorId;
-            if (!Guid.TryParse(User.FindFirstValue("sub"), out authorId))
+            if (!Guid.TryParse(User.FindFirstValue("sub"), out Guid authorId))
                 throw new ArgumentException("Sub claim parsing failed");
 
             _logger.LogInformation($"User (ID #{authorId}) trying to create new post");
@@ -105,8 +104,7 @@ namespace Cirno.Blogs.Controllers
         [Authorize]
         public async Task<IActionResult> UpdatePostAsync(long id, [FromBody]UpdatePostDto requestDto)
         {
-            Guid authorId;
-            if (!Guid.TryParse(User.FindFirstValue("sub"), out authorId))
+            if (!Guid.TryParse(User.FindFirstValue("sub"), out Guid authorId))
                 throw new ArgumentException("Sub claim parsing failed");
 
             _logger.LogInformation($"User (ID #{authorId}) trying to update post with identificator {id}");
@@ -144,8 +142,7 @@ namespace Cirno.Blogs.Controllers
         [Authorize]
         public async Task<IActionResult> DeletePostAsync(long id)
         {
-            Guid authorId;
-            if (!Guid.TryParse(User.FindFirstValue("sub"), out authorId))
+            if (!Guid.TryParse(User.FindFirstValue("sub"), out Guid authorId))
                 throw new ArgumentException("Sub claim parsing failed");
 
             _logger.LogInformation($"User (ID #{authorId}) trying to delete post with identificator {id}");
