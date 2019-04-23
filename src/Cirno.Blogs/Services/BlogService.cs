@@ -53,6 +53,7 @@ namespace Cirno.Blogs.Services
                 throw new ArgumentOutOfRangeException("limit", "Limit must be positive number");
 
             return await _dbContext.Blogs
+                .OrderBy(x => x.Id)
                 .Skip(page * limit)
                 .Take(limit)
                 .ToArrayAsync();

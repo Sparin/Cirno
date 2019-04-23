@@ -21,9 +21,24 @@
 
   <ItemGroup>
     <!-- Don't publish the SPA source files, but do show them in the project files list -->
+    <Compile Remove="ClientApp\src\components\NewFolder\**" />
     <Content Remove="$(SpaRoot)**" />
+    <Content Remove="ClientApp\src\components\NewFolder\**" />
+    <EmbeddedResource Remove="ClientApp\src\components\NewFolder\**" />
     <None Remove="$(SpaRoot)**" />
+    <None Remove="ClientApp\src\components\NewFolder\**" />
     <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="ClientApp\src\components\enc.js" />
+    <None Remove="ClientApp\src\pages\PostsManager.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="ClientApp\NewFolder1\" />
+    <Folder Include="ClientApp\NewFolder\" />
+    <Folder Include="ClientApp\src\NewFolder\" />
   </ItemGroup>
 
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">

@@ -39,9 +39,9 @@ namespace Cirno.Identity.Diagnostics
                     RequirePkce = true,
                     RequireClientSecret = false,
 
-                    RedirectUris =           { "http://localhost:5005/callback.html" },
-                    PostLogoutRedirectUris = { "http://localhost:5005/index.html" },
-                    AllowedCorsOrigins =     { "http://localhost:5005" },
+                    RedirectUris =           { "https://localhost:5005/callback.html" },
+                    PostLogoutRedirectUris = { "https://localhost:5005/index.html" },
+                    AllowedCorsOrigins =     { "https://localhost:5005" },
 
                     AllowedScopes =
                     {
