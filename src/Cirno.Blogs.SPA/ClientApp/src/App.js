@@ -16,12 +16,12 @@ function getApiBaseUrl() {
 }
 
 const oidcConfiguration = {
-    authority: "https://localhost:5001",
+    authority: "https://localhost:5001/",
     client_id: "js",
     redirect_uri: "https://localhost:5005/callback.html",
     response_type: "code",
     scope: "openid profile cirno.blogs",
-    post_logout_redirect_uri: "https://localhost:5005/index.html",
+    post_logout_redirect_uri: "https://localhost:5005/",
 }
 
 export default class App extends Component {
@@ -33,7 +33,8 @@ export default class App extends Component {
                 <Route exact path='/' component={Home} />
                 <Route path='/dashboard' component={Dashboard} />
                 <Route path='/blog/:id' component={Blog} />
-                <Route path='/post/:id' component={Post} />
+                <Route exact path='/post/:id' component={Post} />
+                
             </Layout>
         );
     }

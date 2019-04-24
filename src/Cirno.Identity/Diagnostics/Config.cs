@@ -34,14 +34,14 @@ namespace Cirno.Identity.Diagnostics
                 new Client
                 {
                     ClientId = "js",
-                    ClientName = "JavaScript Client",
+                    ClientName = "Cirno's Blogs SPA on React JS",
                     AllowedGrantTypes = GrantTypes.Code,
                     RequirePkce = true,
                     RequireClientSecret = false,
 
                     RedirectUris =           { "https://localhost:5005/callback.html" },
-                    PostLogoutRedirectUris = { "https://localhost:5005/index.html" },
-                    AllowedCorsOrigins =     { "https://localhost:5005" },
+                    PostLogoutRedirectUris = { "https://localhost:5005/" },
+                    AllowedCorsOrigins =     { "https://localhost:5005/" },
 
                     AllowedScopes =
                     {

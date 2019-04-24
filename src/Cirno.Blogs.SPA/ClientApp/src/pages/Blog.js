@@ -7,9 +7,6 @@ export class Blog extends Component {
     constructor(props) {
         super(props);
 
-        this.onDeleteHandle = this.onDeleteHandle.bind(this);
-        this.onEditHandle = this.onEditHandle.bind(this);
-
         this.state = {
             blog: {},
             posts: [],
@@ -20,47 +17,28 @@ export class Blog extends Component {
         fetch(getApiBaseUrl() + 'api/blog/' + props.match.params.id)
             .then(response => response.json())
             .then(data => {
-                this.setState({ blog: data , bLoading: false });
+                this.setState({ blog: data, bLoading: false });
             });
 
 
         fetch(getApiBaseUrl() + 'api/post?blogId=' + props.match.params.id)
             .then(response => response.json())
             .then(data => {
-                this.setState({ posts: data , pLoading: false });
+                this.setState({ posts: data, pLoading: false });
             });
     }
 
-    /**
-     * Send edit blog request to the API
-     * @param {Number} id identifier
-     */
-    onEditHandle() {
-        this.setState({
-            currentCount: this.state.currentCount + 1
-        });
-    }
-
-    /**
-     * Send remove blog request to the API
-     * @param {Number} id identifier
-     */
-    onDeleteHandle() {
-        this.setState({
-            currentCount: this.state.currentCount + 1
-        });
-    }
 
     static renderPostList(posts) {
         return (
             <div>
                 {posts.map(post =>
                     <div key={post.id} className="card" style={{ marginBottom: 1 + 'em', padding: '16px' }} >
-                        <h3 className="card-title">{post.title}</h3>
+                        <h3 className="card-title"><Link to={'/post/' + post.id}>{post.title}</Link></h3>
                         <p dangerouslySetInnerHTML={{ __html: post.content }} className="card-text"></p>
                         <hr style={{ margin: 0, padding: 0 }}></hr>
-                        <p style={{ margin: 0, padding:0 }}> Last update at: {post.updatedAt}</p>
-                    </div>
+                        <p style={{ margin: 0, padding: 0 }}> Last update at: {post.updatedAt}</p>
+                    </div>                    
                 )}
             </div>
         );
@@ -74,7 +52,7 @@ export class Blog extends Component {
         return (
             <div>
                 <h1>{this.state.blog.name}</h1>
-                <p>Look at this prettiest posts of this blog!</p>
+                <p>Look at this prettiest posts of this blog!</p>                
                 {contents}
             </div>
         );

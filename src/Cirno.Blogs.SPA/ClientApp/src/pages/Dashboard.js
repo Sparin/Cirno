@@ -1,7 +1,8 @@
 ﻿import React, { Component } from 'react';
 import { getApiBaseUrl } from '../App';
 import { Redirect } from 'react-router-dom'
-import { Link } from 'react-router-dom'
+import { Link, Route} from 'react-router-dom'
+import { Post } from './Post';
 
 export class Dashboard extends Component {
 
@@ -48,6 +49,8 @@ export class Dashboard extends Component {
             <div>
                 <h1>Cirno's dashboard!</h1>
                 <p>Look at this prettiest blogs you ever have seen</p>
+                <p><Link to="/post/create" className="btn btn-sm btn-primary">Submit post to them!</Link></p>
+                <Route path={`/post/create`} component={Post} />
                 {contents}
             </div>
         );
