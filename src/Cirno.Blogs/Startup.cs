@@ -60,6 +60,7 @@ namespace Cirno.Blogs
                 .AddJsonOptions(options =>
                 {
                     options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
+                    options.SerializerSettings.TypeNameHandling = Newtonsoft.Json.TypeNameHandling.None;
                 });
 
             services.AddAuthorization();
@@ -112,6 +113,11 @@ namespace Cirno.Blogs
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+            app.Use(async (context, next) =>
+            {
+                context.Response.Headers.Add("X-Xss-Protection", "1");
+                await next();
+            });
             app.UseCors(builder =>
             {
                 builder.AllowAnyOrigin();
