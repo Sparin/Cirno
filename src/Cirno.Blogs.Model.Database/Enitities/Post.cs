@@ -9,6 +9,7 @@ namespace Cirno.Blogs.Model.Enitities
     public class Post
     {
         public long Id { get; set; }
+        public Guid AuthourId { get; set; }
 
         [Column(TypeName = "timestamp with time zone")]
         public DateTime CreatedAt { get; set; }

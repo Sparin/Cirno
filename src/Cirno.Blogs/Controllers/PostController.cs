@@ -3,10 +3,12 @@ using Cirno.Blogs.Model.DTO.Entities.Post;
 using Cirno.Blogs.Model.Enitities;
 using Cirno.Blogs.Security;
 using Cirno.Blogs.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -53,9 +55,16 @@ namespace Cirno.Blogs.Controllers
 
         // POST api/<controller>
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> CreatePostAsync([FromBody]CreatePostDto requestDto)
         {            
             var entity = _mapper.Map<Post>(requestDto);
+
+            Guid authorId;
+            if (!Guid.TryParse(this.User.FindFirstValue("sub"), out authorId))
+                throw new ArgumentException("Sub claim parsing failed");
+            entity.AuthourId = authorId;
+
             var blog = await _blogs.GetBlogAsync(entity.BlogId);
             if (blog == null)
                 return BadRequest();
@@ -72,12 +81,20 @@ namespace Cirno.Blogs.Controllers
 
         // PUT api/<controller>/5
         [HttpPut("{id}")]
+        [Authorize]
         public async Task<IActionResult> UpdatePostAsync(long id, [FromBody]UpdatePostDto requestDto)
         {
             var entity = await _posts.GetPostAsync(id);
 
             if (entity == default(Post))
                 return NotFound();
+
+            Guid authorId;
+            if (!Guid.TryParse(this.User.FindFirstValue("sub"), out authorId))
+                throw new ArgumentException("Sub claim parsing failed");
+
+            if (authorId != entity.AuthourId)
+                return Forbid();
 
             entity = _mapper.Map(requestDto, entity);
             entity.Sanitize();
@@ -92,12 +109,20 @@ namespace Cirno.Blogs.Controllers
 
         // DELETE api/<controller>/5
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<IActionResult> DeletePostAsync(int id)
         {
             var entity = await _posts.GetPostAsync(id);
 
             if (entity == default(Post))
                 return NotFound();
+
+            Guid authorId;
+            if (!Guid.TryParse(this.User.FindFirstValue("sub"), out authorId))
+                throw new ArgumentException("Sub claim parsing failed");
+
+            if (authorId != entity.AuthourId)
+                return Forbid();
 
             await _posts.RemovePostAsync(entity);
 

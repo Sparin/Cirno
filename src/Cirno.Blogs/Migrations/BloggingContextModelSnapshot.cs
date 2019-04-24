@@ -24,7 +24,10 @@ namespace Cirno.Blogs.Migrations
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("Name");
+                    b.Property<Guid>("AuthourId");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(50);
 
                     b.Property<long>("PostCount");
 
@@ -38,6 +41,8 @@ namespace Cirno.Blogs.Migrations
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd();
 
+                    b.Property<Guid>("AuthourId");
+
                     b.Property<long>("BlogId");
 
                     b.Property<string>("Content");
@@ -47,7 +52,8 @@ namespace Cirno.Blogs.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("now()");
 
-                    b.Property<string>("Title");
+                    b.Property<string>("Title")
+                        .HasMaxLength(50);
 
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
