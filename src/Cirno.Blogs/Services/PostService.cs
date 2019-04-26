@@ -68,9 +68,9 @@ namespace Cirno.Blogs.Services
                 throw new ArgumentOutOfRangeException("limit", "Limit must be positive number");
 
             if (blogId == null)
-                return await _dbContext.Posts.Skip(page * limit).Take(limit).ToArrayAsync();
+                return await _dbContext.Posts.OrderByDescending(x => x.CreatedAt).Skip(page * limit).Take(limit).ToArrayAsync();
             else
-                return await _dbContext.Posts.Skip(page * limit).Where(x => x.BlogId == blogId).Take(limit).ToArrayAsync();
+                return await _dbContext.Posts.OrderByDescending(x=>x.CreatedAt).Skip(page * limit).Where(x => x.BlogId == blogId).Take(limit).ToArrayAsync();
         }
 
         public async Task<Post> UpdatePostAsync(Post post)
