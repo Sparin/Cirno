@@ -127,6 +127,8 @@ namespace Cirno.Identity
             app.Use(async (context, next) =>
             {
                 context.Response.Headers.Add("X-Xss-Protection", "1");
+                context.Response.Headers.Add("X-Frame-Options", "DENY");
+                context.Response.Headers.Add("X-Content-Type-Options", "nosniff");
                 await next();
             });
             app.UseCors(builder =>
