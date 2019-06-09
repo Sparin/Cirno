@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cirno.Blogs.Model.DTO", "sr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cirno.Identity", "src\Cirno.Identity\Cirno.Identity.csproj", "{7C38897A-5B45-4D84-94C8-7CCBA25307DA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cirno.Blogs.SPA", "src\Cirno.Blogs.SPA\Cirno.Blogs.SPA.csproj", "{BBC291E5-A8CF-48B0-8AA7-C11505A74CF8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{7C38897A-5B45-4D84-94C8-7CCBA25307DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7C38897A-5B45-4D84-94C8-7CCBA25307DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7C38897A-5B45-4D84-94C8-7CCBA25307DA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BBC291E5-A8CF-48B0-8AA7-C11505A74CF8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BBC291E5-A8CF-48B0-8AA7-C11505A74CF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BBC291E5-A8CF-48B0-8AA7-C11505A74CF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BBC291E5-A8CF-48B0-8AA7-C11505A74CF8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
